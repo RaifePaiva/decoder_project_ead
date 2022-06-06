@@ -33,7 +33,7 @@ public class Lesson {
     private LocalDateTime creationDate = LocalDateTime.now();
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    @ManyToOne(optional = false, fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     private Module module;
 
 }
