@@ -6,6 +6,7 @@ import com.ead.authuser.enums.UserType;
 import com.ead.authuser.models.User;
 import com.ead.authuser.services.UserService;
 import com.fasterxml.jackson.annotation.JsonView;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,6 +15,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@Log4j2
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RequestMapping("/auth")
 public class AuthenticationController {
@@ -24,11 +26,14 @@ public class AuthenticationController {
     @PostMapping("/signup")
     public ResponseEntity<Object> signupStudentByDefault(@RequestBody @Validated(UserDto.UserView.RegistrationPost.class) @JsonView(UserDto.UserView.RegistrationPost.class) UserDto userDto){
 
+        log.debug("POST signupStudentByDefault received {} ", userDto.toString());
         if(userService.existsByUserName(userDto.getUserName())){
+            log.warn("Username {} is Already Taken ", userDto.getUserName());
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Error: Username is Already Taken!");
         }
 
         if(userService.existsByEmail(userDto.getEmail())){
+            log.warn("Email {} is Already Taken ", userDto.getEmail());
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Error: Email is Already Taken!");
         }
 
@@ -37,6 +42,7 @@ public class AuthenticationController {
         user.setUserStatus(UserStatus.ACTIVE);
         user.setUserType(UserType.STUDENT);
         userService.saveUser(user);
+        log.debug("POST signupStudentByDefault saved {} ", user.toString());
         return ResponseEntity.status(HttpStatus.CREATED).body(user);
     }
 
