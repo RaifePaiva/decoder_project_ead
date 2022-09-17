@@ -5,11 +5,15 @@ package com.ead.authuser.models;
  */
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.util.UUID;
 
+@AllArgsConstructor
+@NoArgsConstructor
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Entity
