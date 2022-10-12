@@ -1,6 +1,6 @@
 package com.ead.course.services;
 
-import com.ead.course.models.Course;
+import com.ead.course.models.CourseModel;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -9,11 +9,11 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface CourseService {
-    Course save(Course course);
+    void delete(CourseModel courseModel);
 
-    Optional<Course> findCourseById(UUID id);
+    CourseModel save(CourseModel courseModel);
 
-    void deleteCourse(Course course);
+    Optional<CourseModel> findById(UUID courseId);
 
-    Page<Course> findAllCourses(Specification<Course> spec, Pageable pageable);
+    Page<CourseModel> findAll(Specification<CourseModel> spec, Pageable pageable);
 }

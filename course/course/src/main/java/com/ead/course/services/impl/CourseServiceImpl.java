@@ -1,9 +1,10 @@
 package com.ead.course.services.impl;
 
-import com.ead.course.models.Course;
-import com.ead.course.models.CourseUser;
-import com.ead.course.models.Lesson;
-import com.ead.course.models.Module;
+import com.ead.course.clients.AuthUserClient;
+import com.ead.course.models.CourseModel;
+import com.ead.course.models.CourseUserModel;
+import com.ead.course.models.LessonModel;
+import com.ead.course.models.ModuleModel;
 import com.ead.course.repositories.CourseRepository;
 import com.ead.course.repositories.CourseUserRepository;
 import com.ead.course.repositories.LessonRepository;
@@ -15,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -23,49 +25,57 @@ import java.util.UUID;
 public class CourseServiceImpl implements CourseService {
 
     @Autowired
-    private CourseRepository courseRepository;
+    CourseRepository courseRepository;
 
     @Autowired
-    private ModuleRepository moduleRepository;
+    ModuleRepository moduleRepository;
 
     @Autowired
-    private LessonRepository lessonRepository;
+    LessonRepository lessonRepository;
 
     @Autowired
-    private CourseUserRepository courseUserRepository;
+    CourseUserRepository courseUserRepository;
 
-    @Override
-    public Course save(Course course) {
-        return courseRepository.save(course);
-    }
+    @Autowired
+    AuthUserClient authUserClient;
 
+    @Transactional
     @Override
-    public Optional<Course> findCourseById(UUID id) {
-        return courseRepository.findById(id);
-    }
-
-    @Override
-    public void deleteCourse(Course course) {
-        List<Module> moduleList = moduleRepository.findAllModulesIntoCourse(course.getCourseId());
-        if(!moduleList.isEmpty()){
-            for(Module module : moduleList){
-                List<Lesson> lessonList = lessonRepository.findAllLessonByModule(module.getModuleId());
-                if(!lessonList.isEmpty()){
-                    lessonRepository.deleteAll();
+    public void delete(CourseModel courseModel) {
+        boolean deleteCourseUserInAuthUser = false;
+        List<ModuleModel> moduleModelList = moduleRepository.findAllLModulesIntoCourse(courseModel.getCourseId());
+        if (!moduleModelList.isEmpty()){
+            for(ModuleModel module : moduleModelList){
+                List<LessonModel> lessonModelList = lessonRepository.findAllLessonsIntoModule(module.getModuleId());
+                if (!lessonModelList.isEmpty()){
+                    lessonRepository.deleteAll(lessonModelList);
                 }
             }
-            moduleRepository.deleteAll(moduleList);
+            moduleRepository.deleteAll(moduleModelList);
         }
-        List<CourseUser> courseUserList = courseUserRepository.findAllCourseUserIntoCourse(course.getCourseId());
-        if(!courseUserList.isEmpty()){
-            courseUserRepository.deleteAll(courseUserList);
+        List<CourseUserModel> courseUserModelList = courseUserRepository.findAllCourseUserIntoCourse(courseModel.getCourseId());
+        if(!courseUserModelList.isEmpty()){
+            courseUserRepository.deleteAll(courseUserModelList);
+            deleteCourseUserInAuthUser = true;
         }
-
-        courseRepository.delete(course);
+        courseRepository.delete(courseModel);
+        if(deleteCourseUserInAuthUser){
+            authUserClient.deleteCourseInAuthUser(courseModel.getCourseId());
+        }
     }
 
     @Override
-    public Page<Course> findAllCourses(Specification<Course> spec, Pageable pageable) {
+    public CourseModel save(CourseModel courseModel) {
+        return courseRepository.save(courseModel);
+    }
+
+    @Override
+    public Optional<CourseModel> findById(UUID courseId) {
+        return courseRepository.findById(courseId);
+    }
+
+    @Override
+    public Page<CourseModel> findAll(Specification<CourseModel> spec, Pageable pageable) {
         return courseRepository.findAll(spec, pageable);
     }
 }

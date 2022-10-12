@@ -1,11 +1,13 @@
 package com.ead.course.controllers;
 
+
 import com.ead.course.dtos.ModuleDto;
-import com.ead.course.models.Course;
-import com.ead.course.models.Module;
+import com.ead.course.models.CourseModel;
+import com.ead.course.models.ModuleModel;
 import com.ead.course.services.CourseService;
 import com.ead.course.services.ModuleService;
 import com.ead.course.specifications.SpecificationTemplate;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -17,90 +19,88 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Log4j2
 @RestController
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class ModuleController {
 
     @Autowired
-    private ModuleService moduleService;
+    ModuleService moduleService;
 
     @Autowired
-    private CourseService courseService;
-
+    CourseService courseService;
 
     @PostMapping("/courses/{courseId}/modules")
-    public ResponseEntity saveModule(@RequestBody @Valid ModuleDto moduleDto, @PathVariable(value = "courseId") UUID courseId){
-
-        Optional<Course> courseOptional = courseService.findCourseById(courseId);
-        if(!courseOptional.isPresent()){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    public ResponseEntity<Object> saveModule(@PathVariable(value="courseId") UUID courseId,
+                                                @RequestBody @Valid ModuleDto moduleDto){
+        log.debug("POST saveModule moduleDto received {} ", moduleDto.toString());
+        Optional<CourseModel> courseModelOptional = courseService.findById(courseId);
+        if(!courseModelOptional.isPresent()){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Course Not Found.");
         }
-
-        var module = new Module();
-        BeanUtils.copyProperties(moduleDto, module);
-        module.setCourse(courseOptional.get());
-        moduleService.saveModule(module);
-        return ResponseEntity.status(201).build();
-
+        var moduleModel = new ModuleModel();
+        BeanUtils.copyProperties(moduleDto, moduleModel);
+        moduleModel.setCreationDate(LocalDateTime.now(ZoneId.of("UTC")));
+        moduleModel.setCourse(courseModelOptional.get());
+        moduleService.save(moduleModel);
+        log.debug("POST saveModule moduleId saved {} ", moduleModel.getModuleId());
+        log.info("Module saved successfully moduleId {} ", moduleModel.getModuleId());
+        return ResponseEntity.status(HttpStatus.CREATED).body(moduleModel);
     }
 
     @DeleteMapping("/courses/{courseId}/modules/{moduleId}")
-    public ResponseEntity deleteModule(@PathVariable(value = "courseId") UUID courseId, @PathVariable(value = "moduleId") UUID moduleId){
-
-        Optional<Module> moduleOptional = moduleService.findModuleIntoCourse(courseId, moduleId);
-        if(!moduleOptional.isPresent()){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    public ResponseEntity<Object> deleteModule(@PathVariable(value="courseId") UUID courseId,
+                                               @PathVariable(value="moduleId") UUID moduleId){
+        log.debug("DELETE deleteModule moduleId received {} ", moduleId);
+        Optional<ModuleModel> moduleModelOptional = moduleService.findModuleIntoCourse(courseId, moduleId);
+        if(!moduleModelOptional.isPresent()){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Module not found for this course.");
         }
-
-        moduleService.delete(moduleOptional.get());
-        return ResponseEntity.ok().build();
+        moduleService.delete(moduleModelOptional.get());
+        log.debug("DELETE deleteModule moduleId deleted {} ", moduleId);
+        log.info("Module deleted successfully moduleId {} ", moduleId);
+        return ResponseEntity.status(HttpStatus.OK).body("Module deleted successfully.");
     }
 
     @PutMapping("/courses/{courseId}/modules/{moduleId}")
-    public ResponseEntity updateModule(
-            @PathVariable(value = "courseId") UUID courseId,
-            @PathVariable(value = "moduleId") UUID moduleId,
-            @RequestBody @Valid ModuleDto moduleDto
-    ){
-
-        Optional<Module> moduleOptional = moduleService.findModuleIntoCourse(courseId, moduleId);
-        if(!moduleOptional.isPresent()){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    public ResponseEntity<Object> updateModule(@PathVariable(value="courseId") UUID courseId,
+                                               @PathVariable(value="moduleId") UUID moduleId,
+                                               @RequestBody @Valid ModuleDto moduleDto){
+        log.debug("PUT updateModule moduleDto received {} ", moduleDto.toString());
+        Optional<ModuleModel> moduleModelOptional = moduleService.findModuleIntoCourse(courseId, moduleId);
+        if(!moduleModelOptional.isPresent()){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Module not found for this course.");
         }
-
-        var module = moduleOptional.get();
-        module.setTitle(moduleDto.getTitle());
-        module.setDescription(moduleDto.getDescription());
-
-        moduleService.saveModule(module);
-        return ResponseEntity.ok().build();
+        var moduleModel = moduleModelOptional.get();
+        moduleModel.setTitle(moduleDto.getTitle());
+        moduleModel.setDescription(moduleDto.getDescription());
+        moduleService.save(moduleModel);
+        log.debug("PUT updateModule moduleId saved {} ", moduleModel.getModuleId());
+        log.info("Module updated successfully moduleId {} ", moduleModel.getModuleId());
+        return ResponseEntity.status(HttpStatus.OK).body(moduleModel);
     }
 
     @GetMapping("/courses/{courseId}/modules")
-    public ResponseEntity<Page<Module>> getAllModulesByCourse(@PathVariable(value = "courseId") UUID courseId,
-                                                              SpecificationTemplate.ModuleSpec spec, @PageableDefault(page = 0, size = 10, sort = "moduleId", direction = Sort.Direction.ASC) Pageable pageable){
-        return ResponseEntity.ok().body(moduleService.findAllByCourse(SpecificationTemplate.moduleCourseId(courseId).and(spec), pageable));
+    public ResponseEntity<Page<ModuleModel>> getAllModules(@PathVariable(value="courseId") UUID courseId,
+                                                           SpecificationTemplate.ModuleSpec spec,
+                                                           @PageableDefault(page = 0, size = 10, sort = "moduleId", direction = Sort.Direction.ASC) Pageable pageable){
+        return ResponseEntity.status(HttpStatus.OK).body(moduleService.findAllByCourse(SpecificationTemplate.moduleCourseId(courseId).and(spec), pageable));
     }
 
     @GetMapping("/courses/{courseId}/modules/{moduleId}")
-    public ResponseEntity<Module> getModuleIntoCourseById(@PathVariable(value = "courseId") UUID courseId,
-                                                    @PathVariable(value = "moduleId") UUID moduleId){
-
-        Optional<Module> moduleOptional = moduleService.findModuleIntoCourse(courseId, moduleId);
-        if(!moduleOptional.isPresent()){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    public ResponseEntity<Object> getOneModule(@PathVariable(value="courseId") UUID courseId,
+                                               @PathVariable(value="moduleId") UUID moduleId){
+        Optional<ModuleModel> moduleModelOptional = moduleService.findModuleIntoCourse(courseId, moduleId);
+        if(!moduleModelOptional.isPresent()){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Module not found for this course.");
         }
-
-        return ResponseEntity.ok().body(moduleOptional.get());
-
+        return ResponseEntity.status(HttpStatus.OK).body(moduleModelOptional.get());
     }
-
-
-
-
 
 }

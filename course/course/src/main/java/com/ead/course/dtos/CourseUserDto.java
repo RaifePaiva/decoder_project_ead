@@ -9,5 +9,4 @@ public class CourseUserDto {
 
     private UUID courseId;
     private UUID userId;
-
 }

@@ -1,5 +1,3 @@
-
-
 server:
   port: 8087
   servlet:
@@ -9,9 +7,9 @@ spring:
   application:
     name: ead-authuser-service
   datasource:
-    url: jdbc:postgresql://localhost:5432/ead-authuser
+    url:  jdbc:postgresql://localhost:5432/ead-authuser
     username: postgres
-    password: 93295882
+    password: banco123
   jpa:
     hibernate:
       ddl-auto: update
@@ -23,7 +21,8 @@ spring:
         show_sql: true
   output:
     ansi:
-      enabled: always
+      enabled: Always
+
 
 logging:
   level:
@@ -35,11 +34,11 @@ logging:
 ead:
   api:
     url:
-      course: 'http://ead-course-service'
+      course: 'http://ead-course-service/ead-course'
 
 eureka:
   client:
-    service-url:
-      default-zone: 'http://localhost:8761/eureka'
+    serviceUrl:
+      defaultZone: 'http://localhost:8761/eureka'
   instance:
     hostname: localhost

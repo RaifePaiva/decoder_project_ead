@@ -1,7 +1,7 @@
 package com.ead.course.services.impl;
 
-import com.ead.course.models.Lesson;
-import com.ead.course.models.Module;
+import com.ead.course.models.LessonModel;
+import com.ead.course.models.ModuleModel;
 import com.ead.course.repositories.LessonRepository;
 import com.ead.course.repositories.ModuleRepository;
 import com.ead.course.services.ModuleService;
@@ -20,45 +20,43 @@ import java.util.UUID;
 public class ModuleServiceImpl implements ModuleService {
 
     @Autowired
-    private ModuleRepository moduleRepository;
+    ModuleRepository moduleRepository;
 
     @Autowired
-    private LessonRepository lessonRepository;
-
-    @Override
-    public void saveModule(Module module) {
-        moduleRepository.save(module);
-    }
-
-    @Override
-    public Optional<Module> findModuleIntoCourse(UUID courseId, UUID moduleId) {
-        return moduleRepository.findModuleIntoCourse(courseId, moduleId);
-    }
+    LessonRepository lessonRepository;
 
     @Transactional
     @Override
-    public void delete(Module module) {
-        List<Lesson> lessonList = lessonRepository.findAllLessonByModule(module.getModuleId());
-        if (!lessonList.isEmpty()){
-            lessonRepository.deleteAll(lessonList);
+    public void delete(ModuleModel moduleModel) {
+        List<LessonModel> lessonModelList = lessonRepository.findAllLessonsIntoModule(moduleModel.getModuleId());
+        if (!lessonModelList.isEmpty()){
+            lessonRepository.deleteAll(lessonModelList);
         }
-        moduleRepository.delete(module);
+        moduleRepository.delete(moduleModel);
     }
 
     @Override
-    public List<Module> findAllByCourse(UUID courseId) {
-        return moduleRepository.findAllModulesIntoCourse(courseId);
+    public ModuleModel save(ModuleModel moduleModel) {
+        return moduleRepository.save(moduleModel);
     }
 
     @Override
-    public Optional<Module> findModuleById(UUID moduleId) {
+    public Optional<ModuleModel> findModuleIntoCourse(UUID courseId, UUID moduleId) {
+        return moduleRepository.findModuleIntoCourse(courseId, moduleId);
+    }
+
+    @Override
+    public List<ModuleModel> findAllByCourse(UUID courseId) {
+        return moduleRepository.findAllLModulesIntoCourse(courseId);
+    }
+
+    @Override
+    public Optional<ModuleModel> findById(UUID moduleId) {
         return moduleRepository.findById(moduleId);
     }
 
     @Override
-    public Page<Module> findAllByCourse(Specification<Module> spec, Pageable pageable) {
+    public Page<ModuleModel> findAllByCourse(Specification<ModuleModel> spec, Pageable pageable) {
         return moduleRepository.findAll(spec, pageable);
     }
-
-
 }

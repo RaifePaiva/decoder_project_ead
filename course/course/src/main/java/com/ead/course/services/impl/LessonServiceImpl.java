@@ -1,6 +1,6 @@
 package com.ead.course.services.impl;
 
-import com.ead.course.models.Lesson;
+import com.ead.course.models.LessonModel;
 import com.ead.course.repositories.LessonRepository;
 import com.ead.course.services.LessonService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,30 +17,30 @@ import java.util.UUID;
 public class LessonServiceImpl implements LessonService {
 
     @Autowired
-    private LessonRepository lessonRepository;
+    LessonRepository lessonRepository;
 
     @Override
-    public void save(Lesson lesson) {
-        lessonRepository.save(lesson);
+    public LessonModel save(LessonModel lessonModel) {
+        return lessonRepository.save(lessonModel);
     }
 
     @Override
-    public Optional<Lesson> findLessonIntoModule(UUID moduleId, UUID lessonId) {
+    public Optional<LessonModel> findLessonIntoModule(UUID moduleId, UUID lessonId) {
         return lessonRepository.findLessonIntoModule(moduleId, lessonId);
     }
 
     @Override
-    public void deleteLesson(Lesson lesson) {
-        lessonRepository.delete(lesson);
+    public void delete(LessonModel lessonModel) {
+        lessonRepository.delete(lessonModel);
     }
 
     @Override
-    public List<Lesson> findAllLessonByModule(UUID moduleId) {
-        return lessonRepository.findAllLessonByModule(moduleId);
+    public List<LessonModel> findAllByModule(UUID moduleId) {
+        return lessonRepository.findAllLessonsIntoModule(moduleId);
     }
 
     @Override
-    public Page<Lesson> findAllLessonByModule(Specification<Lesson> spec, Pageable pageable) {
+    public Page<LessonModel> findAllByModule(Specification<LessonModel> spec, Pageable pageable) {
         return lessonRepository.findAll(spec, pageable);
     }
 }

@@ -1,14 +1,17 @@
 package com.ead.authuser.services;
 
-import com.ead.authuser.models.User;
-import com.ead.authuser.models.UserCourse;
+import com.ead.authuser.models.UserCourseModel;
+import com.ead.authuser.models.UserModel;
 
 import java.util.UUID;
 
 public interface UserCourseService {
 
+    boolean existsByUserAndCourseId(UserModel userModel, UUID courseId);
 
-    boolean existsByUserAndCourseId(User user, UUID courseId);
+    UserCourseModel save(UserCourseModel userCourseModel);
 
-    UserCourse save(UserCourse convertToUserCourse);
+    boolean existsByCourseId(UUID courseId);
+
+    void deleteUserCourseByCourse(UUID courseId);
 }

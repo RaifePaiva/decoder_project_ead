@@ -1,4 +1,4 @@
-package com.ead.course.dtos;
+package com.ead.authuser.dtos;
 
 import lombok.Data;
 
@@ -6,8 +6,9 @@ import javax.validation.constraints.NotNull;
 import java.util.UUID;
 
 @Data
-public class SubscriptionDto {
+public class UserCourseDto {
 
-    @NotNull
     private UUID userId;
+    @NotNull
+    private UUID courseId;
 }

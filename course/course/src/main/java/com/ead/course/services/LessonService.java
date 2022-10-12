@@ -1,23 +1,22 @@
 package com.ead.course.services;
 
-import com.ead.course.models.Lesson;
+import com.ead.course.models.LessonModel;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.List;
 
 public interface LessonService {
+    LessonModel save(LessonModel lessonModel);
 
-    void save(Lesson lesson);
+    Optional<LessonModel> findLessonIntoModule(UUID moduleId, UUID lessonId);
 
-    Optional<Lesson> findLessonIntoModule(UUID moduleId, UUID lessonId);
+    void delete(LessonModel lessonModel);
 
-    void deleteLesson(Lesson lesson);
+    List<LessonModel> findAllByModule(UUID moduleId);
 
-    List<Lesson> findAllLessonByModule(UUID moduleId);
-
-    Page<Lesson> findAllLessonByModule(Specification<Lesson> spec, Pageable pageable);
+    Page<LessonModel> findAllByModule(Specification<LessonModel> spec, Pageable pageable);
 }
